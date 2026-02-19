@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  forkast:
+    build: .
+    container_name: forkast-platform
+    ports:
+      - "8517:8517"   # Streamlit UI
+      - "8518:8518"   # FastAPI API
+    environment:
+      - FORKAST_ADMIN_API_KEY=${FORKAST_ADMIN_API_KEY:-fk-admin-dev-key-change-me}
+      - FORKAST_STRIPE_SECRET_KEY=${FORKAST_STRIPE_SECRET_KEY:-}
+      - FORKAST_STRIPE_PUBLISHABLE_KEY=${FORKAST_STRIPE_PUBLISHABLE_KEY:-}
+      - FORKAST_STRIPE_WEBHOOK_SECRET=${FORKAST_STRIPE_WEBHOOK_SECRET:-}
+      - FORKAST_DEBUG=${FORKAST_DEBUG:-false}
+    volumes:
+      - forkast-data:/app/data-volume
+    restart: unless-stopped
+
+volumes:
+  forkast-data:
