@@ -1,0 +1,55 @@
+version: "3.8"
+
+# HTTPS deployment with Nginx + Let's Encrypt SSL
+# Usage:
+#   1. Set your domain: export DOMAIN=forkast.yourdomain.com
+#   2. Set your email:  export EMAIL=you@email.com
+#   3. Run: docker compose -f docker-compose.ssl.yml up -d
+
+services:
+  forkast:
+    build: .
+    container_name: forkast-platform
+    expose:
+      - "8517"
+      - "8518"
+    environment:
+      - FORKAST_ADMIN_API_KEY=${FORKAST_ADMIN_API_KEY:-fk-admin-dev-key-change-me}
+      - FORKAST_STRIPE_SECRET_KEY=${FORKAST_STRIPE_SECRET_KEY:-}
+      - FORKAST_STRIPE_PUBLISHABLE_KEY=${FORKAST_STRIPE_PUBLISHABLE_KEY:-}
+      - FORKAST_STRIPE_WEBHOOK_SECRET=${FORKAST_STRIPE_WEBHOOK_SECRET:-}
+      - FORKAST_USERS=${FORKAST_USERS:-admin:admin123}
+      - FORKAST_DEBUG=${FORKAST_DEBUG:-false}
+    volumes:
+      - forkast-data:/app/data-volume
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: forkast-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/templates/default.conf.template:ro
+      - certbot-conf:/etc/letsencrypt:ro
+      - certbot-www:/var/www/certbot:ro
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+    depends_on:
+      - forkast
+    restart: unless-stopped
+
+  certbot:
+    image: certbot/certbot
+    container_name: forkast-certbot
+    volumes:
+      - certbot-conf:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    restart: unless-stopped
+
+volumes:
+  forkast-data:
+  certbot-conf:
+  certbot-www:

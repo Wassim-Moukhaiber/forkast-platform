@@ -187,7 +187,67 @@ st.markdown("""
         border-top: 1px solid #f0f0f0;
     }
 </style>
+    /* ---- Login page ---- */
+    .login-container {
+        max-width: 400px; margin: 8rem auto; padding: 2.5rem;
+        background: white; border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        border: 1px solid #f0f0f0;
+    }
+    .login-logo { text-align: center; margin-bottom: 1.5rem; }
+    .login-title {
+        text-align: center; font-size: 1.5rem; font-weight: 800;
+        background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        margin-bottom: 0.3rem;
+    }
+    .login-subtitle { text-align: center; color: #636e72; font-size: 0.85rem; margin-bottom: 1.5rem; }
 """, unsafe_allow_html=True)
+
+# ============================================================
+# AUTHENTICATION GATE
+# ============================================================
+import os
+import hashlib
+
+# Default credentials (override via environment variables)
+_AUTH_USERS = os.environ.get("FORKAST_USERS", "admin:admin123,demo:demo123")
+
+def _verify_credentials(username: str, password: str) -> bool:
+    """Check username:password against FORKAST_USERS env var."""
+    for pair in _AUTH_USERS.split(","):
+        if ":" in pair:
+            u, p = pair.split(":", 1)
+            if u.strip() == username and p.strip() == password:
+                return True
+    return False
+
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+    st.session_state.auth_user = ""
+
+if not st.session_state.authenticated:
+    from web.assets.images import SIDEBAR_LOGO_SVG, render_svg
+    st.markdown('<div class="login-container">', unsafe_allow_html=True)
+    st.markdown(f'<div class="login-logo">{render_svg(SIDEBAR_LOGO_SVG, width="160px")}</div>', unsafe_allow_html=True)
+    st.markdown('<div class="login-title">Welcome to Forkast</div>', unsafe_allow_html=True)
+    st.markdown('<div class="login-subtitle">Sign in to access the platform</div>', unsafe_allow_html=True)
+
+    with st.form("login_form"):
+        username = st.text_input("Username", placeholder="Enter username")
+        password = st.text_input("Password", type="password", placeholder="Enter password")
+        submitted = st.form_submit_button("Sign In", use_container_width=True, type="primary")
+
+        if submitted:
+            if _verify_credentials(username, password):
+                st.session_state.authenticated = True
+                st.session_state.auth_user = username
+                st.rerun()
+            else:
+                st.error("Invalid username or password")
+
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.stop()
 
 # Initialize session state with demo data
 if 'initialized' not in st.session_state:
