@@ -5,7 +5,7 @@ Generates realistic restaurant operations data for MENA region
 import random
 import math
 from datetime import datetime, timedelta, date
-from typing import List, Dict, Tuple
+from typing import Any, List, Dict, Tuple
 import sys
 from pathlib import Path
 
