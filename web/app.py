@@ -186,7 +186,6 @@ st.markdown("""
         text-align: center; padding: 1rem 0; margin-top: 2rem;
         border-top: 1px solid #f0f0f0;
     }
-</style>
     /* ---- Login page ---- */
     .login-container {
         max-width: 400px; margin: 8rem auto; padding: 2.5rem;
@@ -202,6 +201,7 @@ st.markdown("""
         margin-bottom: 0.3rem;
     }
     .login-subtitle { text-align: center; color: #636e72; font-size: 0.85rem; margin-bottom: 1.5rem; }
+</style>
 """, unsafe_allow_html=True)
 
 # ============================================================
